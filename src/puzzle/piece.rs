@@ -1,3 +1,4 @@
+#[derive(Copy, Clone)]
 pub enum Link {
     None,
     Road,
@@ -6,8 +7,10 @@ pub enum Link {
     River,
 }
 
+#[derive(Copy, Clone)]
 pub struct Side(Link, Link);
 
+#[derive(Copy, Clone)]
 pub struct Piece {
     sides: [Side; 4],
 }
