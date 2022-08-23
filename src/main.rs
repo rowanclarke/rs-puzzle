@@ -1,4 +1,3 @@
-mod piece;
 mod puzzle;
 
 use puzzle::*;
