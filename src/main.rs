@@ -1,4 +1,5 @@
-mod puzzle;
+pub mod puzzle;
+pub mod utils;
 
 use puzzle::*;
 
