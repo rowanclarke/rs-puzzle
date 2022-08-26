@@ -14,19 +14,47 @@ impl Puzzle {
         self.possible[(x * 4) + y]
     }
 
-    fn set(&mut self, (x, y): (usize, usize), i: u64) {
-        self.possible[(x * 4) + y] = i;
+    fn mask(&mut self, (x, y): (usize, usize), m: u64) {
+        self.possible[(x * 4) + y] &= m;
+    }
+
+    fn set(&mut self, (x, y): (usize, usize), (p, r): (usize, usize)) {
+        // Set piece
+        self.mask((x, y), 1 << ((p * 4) + r));
+
+        // Take piece
+        for xy in Cartesian::new(0..4, 0..4) {
+            self.mask(xy, !(15 << (p * 4)));
+        }
+
+        // Remove unmatching from neighbours
+        for (i, xy) in [(x, y + 1), (x + 1, y), (x, y - 1), (x - 1, y)]
+            .into_iter()
+            .enumerate()
+        {
+            let current = self.get(xy);
+            for (po, ro) in Cartesian::new(0..16usize, 0..4usize)
+                .filter(|(po, ro)| (1 << ((po * 4) + ro)) & current != 0)
+            {
+                let side = self.pieces[po][ro];
+                // TODO
+            }
+        }
     }
 
     pub fn place_all(&mut self, (x, y): (usize, usize)) {
-        let possible = self.get((x, y));
-        for (p, r, i) in Cartesian::new(0..16, 0..4)
-            .map(|(p, r)| (p, r, 1 << ((p * 4) + r)))
-            .filter(|(_, _, i)| i & possible != 0)
+        let state = self.possible;
+        let current = self.get((x, y));
+        // Go through all possibilities
+        for (p, r) in
+            Cartesian::new(0..16, 0..4).filter(|(p, r)| (1 << ((p * 4) + r)) & current != 0)
         {
-            // TODO
+            // Set possibility
+            self.set((x, y), (p, r));
+            // TODO place next piece
+            // Undo changes
+            self.possible = state;
         }
-        self.possible[(x * 4) + y] = possible;
     }
 
     pub fn new() -> Self {
