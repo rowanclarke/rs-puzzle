@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Link {
     None,
     Road,
@@ -9,6 +9,13 @@ pub enum Link {
 
 #[derive(Copy, Clone)]
 pub struct Side(pub Link, pub Link);
+
+impl PartialEq<Self> for Side {
+    fn eq(&self, rhs: &Self) -> bool {
+        // Can they fit together?
+        return self.0 == rhs.1 && self.1 == rhs.0;
+    }
+}
 
 pub type Piece = [Side; 4];
 

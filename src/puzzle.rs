@@ -2,11 +2,9 @@ mod piece;
 
 use crate::utils::cartesian::Cartesian;
 use piece::*;
-use std::collections::LinkedList;
 
 pub struct Puzzle {
     possible: [u64; 16],
-    pieces: [Piece; 16],
 }
 
 impl Puzzle {
@@ -22,7 +20,7 @@ impl Puzzle {
         // Set piece
         self.mask((x, y), 1 << ((p * 4) + r));
 
-        // Take piece
+        // Take piece from all possibilities
         for xy in Cartesian::new(0..4, 0..4) {
             self.mask(xy, !(15 << (p * 4)));
         }
@@ -32,20 +30,23 @@ impl Puzzle {
             .into_iter()
             .enumerate()
         {
+            // Side to match
+            let side = pieces[p][i];
+            // Go through all possibilities
             let current = self.get(xy);
-            for (po, ro) in Cartesian::new(0..16usize, 0..4usize)
-                .filter(|(po, ro)| (1 << ((po * 4) + ro)) & current != 0)
-            {
-                let side = self.pieces[po][ro];
-                // TODO
+            for (po, ro) in Cartesian::new(0..16, 0..4).filter(|&(po, ro)| {
+                (1 << ((po * 4) + ro)) & current != 0 && pieces[po][(ro + 2) % 4] != side
+            }) {
+                // Remove unmatching sides
+                self.mask(xy, !(1 << ((po * 4) + ro)));
             }
         }
     }
 
     pub fn place_all(&mut self, (x, y): (usize, usize)) {
         let state = self.possible;
-        let current = self.get((x, y));
         // Go through all possibilities
+        let current = self.get((x, y));
         for (p, r) in
             Cartesian::new(0..16, 0..4).filter(|(p, r)| (1 << ((p * 4) + r)) & current != 0)
         {
@@ -60,104 +61,6 @@ impl Puzzle {
     pub fn new() -> Self {
         Self {
             possible: [u64::MAX; 16],
-            pieces: [
-                Piece::new([
-                    Side(Link::Track, Link::Road),
-                    Side(Link::River, Link::Track),
-                    Side(Link::River, Link::None),
-                    Side(Link::Track, Link::Road),
-                ]),
-                Piece::new([
-                    Side(Link::River, Link::Track),
-                    Side(Link::Path, Link::Track),
-                    Side(Link::River, Link::Road),
-                    Side(Link::Road, Link::Path),
-                ]),
-                Piece::new([
-                    Side(Link::Road, Link::Path),
-                    Side(Link::River, Link::Path),
-                    Side(Link::Road, Link::None),
-                    Side(Link::River, Link::Path),
-                ]),
-                Piece::new([
-                    Side(Link::Road, Link::Track),
-                    Side(Link::Track, Link::River),
-                    Side(Link::Path, Link::Track),
-                    Side(Link::Road, Link::River),
-                ]),
-                Piece::new([
-                    Side(Link::Path, Link::River),
-                    Side(Link::None, Link::Road),
-                    Side(Link::Path, Link::River),
-                    Side(Link::None, Link::Road),
-                ]),
-                Piece::new([
-                    Side(Link::Road, Link::Track),
-                    Side(Link::Road, Link::None),
-                    Side(Link::Track, Link::Path),
-                    Side(Link::River, Link::River),
-                ]),
-                Piece::new([
-                    Side(Link::Track, Link::Path),
-                    Side(Link::Path, Link::River),
-                    Side(Link::River, Link::Road),
-                    Side(Link::Road, Link::Track),
-                ]),
-                Piece::new([
-                    Side(Link::Road, Link::River),
-                    Side(Link::Path, Link::Track),
-                    Side(Link::Track, Link::Road),
-                    Side(Link::River, Link::Track),
-                ]),
-                Piece::new([
-                    Side(Link::None, Link::Track),
-                    Side(Link::None, Link::Track),
-                    Side(Link::Track, Link::River),
-                    Side(Link::River, Link::Track),
-                ]),
-                Piece::new([
-                    Side(Link::River, Link::Road),
-                    Side(Link::Path, Link::River),
-                    Side(Link::Road, Link::River),
-                    Side(Link::None, Link::River),
-                ]),
-                Piece::new([
-                    Side(Link::Track, Link::Road),
-                    Side(Link::Path, Link::Road),
-                    Side(Link::Track, Link::River),
-                    Side(Link::River, Link::Path),
-                ]),
-                Piece::new([
-                    Side(Link::Track, Link::Path),
-                    Side(Link::River, Link::Road),
-                    Side(Link::River, Link::Path),
-                    Side(Link::Road, Link::Track),
-                ]),
-                Piece::new([
-                    Side(Link::River, Link::Track),
-                    Side(Link::Path, Link::River),
-                    Side(Link::Track, Link::Path),
-                    Side(Link::River, Link::River),
-                ]),
-                Piece::new([
-                    Side(Link::River, Link::Path),
-                    Side(Link::Track, Link::Path),
-                    Side(Link::None, Link::Road),
-                    Side(Link::Road, Link::River),
-                ]),
-                Piece::new([
-                    Side(Link::Path, Link::Track),
-                    Side(Link::Road, Link::River),
-                    Side(Link::Track, Link::None),
-                    Side(Link::Road, Link::River),
-                ]),
-                Piece::new([
-                    Side(Link::Track, Link::River),
-                    Side(Link::River, Link::Road),
-                    Side(Link::Road, Link::River),
-                    Side(Link::River, Link::Path),
-                ]),
-            ],
         }
     }
 }
